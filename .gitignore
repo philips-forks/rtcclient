@@ -55,11 +55,3 @@ docs/_build/
 
 # PyBuilder
 target/
-
-# Intellij
-.idea
-
-# virtual env
-venv/
-.venv/
-
