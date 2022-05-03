@@ -1,25 +1,28 @@
 rtcclient
 =========
 How to install this repo:
-```
-$ git clone https://github.com/philips-forks/rtcclient rtcclient-philips 
-$ cd ..
-$ pip uninstall rtcclient
-$ pip install -e ./rtcclient-philips/
 
 ```
+    $ git clone https://github.com/philips-forks/rtcclient rtcclient-philips 
+    $ cd ..
+    $ pip uninstall rtcclient
+    $ pip install -e ./rtcclient-philips/
+```
+
 Changes made by Martin Barker:
 - Started with version 0.6.0 ( older RTC support, no multithreading )
 - Added the following code to base.py to support older RTC version:
+
 ```
-requests.packages.urllib3.disable_warnings()
-requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS += ':HIGH:!DH:!aNULL'
-try:
-    requests.packages.urllib3.contrib.pyopenssl.util.ssl_.DEFAULT_CIPHERS += ':HIGH:!DH:!aNULL'
-except AttributeError:
-    # no pyopenssl support used / needed / available
-    pass
+    requests.packages.urllib3.disable_warnings()
+    requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS += ':HIGH:!DH:!aNULL'
+    try:
+        requests.packages.urllib3.contrib.pyopenssl.util.ssl_.DEFAULT_CIPHERS += ':HIGH:!DH:!aNULL'
+    except AttributeError:
+        # no pyopenssl support used / needed / available
+        pass
 ```
+
 - Added the following functions to client.py:
     - getChildrenInfo()
     - getXmlField()
