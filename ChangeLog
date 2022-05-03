@@ -1,10 +1,10 @@
 CHANGES
 =======
 
-0.6.0
+0.8.2
 -----
 
-* minor doc updates for 0.6.0 release
+* minor doc updates for 0.8.2 release
 * add method to download attachment file
 * Insure that before files will not be overridden
 * upload and get attachments: implement issue #84

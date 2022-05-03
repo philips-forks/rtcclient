@@ -1,5 +1,13 @@
 rtcclient
 =========
+How to install this repo:
+```
+$ git clone https://github.com/philips-forks/rtcclient rtcclient-philips 
+$ cd ..
+$ pip uninstall rtcclient
+$ pip install -e ./rtcclient-philips/
+
+```
 Changes made by Martin Barker:
 - Added the following code to base.py to support older RTC version:
 ```
