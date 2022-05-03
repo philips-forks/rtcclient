@@ -1,5 +1,25 @@
 rtcclient
 =========
+Changes made by Martin Barker:
+- Added the following code to base.py to support older RTC version:
+```
+requests.packages.urllib3.disable_warnings()
+requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS += ':HIGH:!DH:!aNULL'
+try:
+    requests.packages.urllib3.contrib.pyopenssl.util.ssl_.DEFAULT_CIPHERS += ':HIGH:!DH:!aNULL'
+except AttributeError:
+    # no pyopenssl support used / needed / available
+    pass
+```
+- Added the following functions to client.py:
+    - getChildrenInfo()
+    - getXmlField()
+    - getTeamTrackBool()
+    - getXmlDict()
+    - getFeaturePlannedForValue()
+    - getUserEmail()
+    
+=========
 
 .. image:: https://readthedocs.org/projects/rtcclient/badge/?version=latest
     :target: https://readthedocs.org/projects/rtcclient
