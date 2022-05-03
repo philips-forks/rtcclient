@@ -9,6 +9,7 @@ $ pip install -e ./rtcclient-philips/
 
 ```
 Changes made by Martin Barker:
+- Started with version 0.6.0 ( older RTC support, no multithreading )
 - Added the following code to base.py to support older RTC version:
 ```
 requests.packages.urllib3.disable_warnings()
