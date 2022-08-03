@@ -15,6 +15,7 @@ from rtcclient import _search_path
 from rtcclient.query import Query
 import six
 from rtcclient import requests
+from multiprocessing.pool import ThreadPool as Pool
 import urllib.parse
 import pprint
 
@@ -991,7 +992,7 @@ class RTCClient(RTCBase):
             return None
         return workitems_list
 
-    def getChildrenInfo(self, parent_id):
+    def getChildrenInfo(self, parent_id, rtc_url):
         child_ids = []
 
         headers = copy.deepcopy(self.headers)
@@ -999,7 +1000,7 @@ class RTCClient(RTCBase):
         proxies=None
         timeout=60
         kwargs={}
-        url="https://rtcus1.ta.philips.com/ccm/oslc/workitems/"+parent_id+"/rtc_cm:com.ibm.team.workitem.linktype.parentworkitem.children"
+        url=rtc_url+"/oslc/workitems/"+parent_id+"/rtc_cm:com.ibm.team.workitem.linktype.parentworkitem.children"
 
         requests.packages.urllib3.disable_warnings()
         requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS += ':HIGH:!DH:!aNULL'
@@ -1201,7 +1202,8 @@ class RTCClient(RTCBase):
             retVal = raw_data[root_key].get("dc:identifier")
             return retVal
 
-    def getUserEmail(self, user_id):
+    def getUserEmail(self, user_id, rtc_url):
+        print("getUserEmail user_id="+user_id+", rtc_url="+rtc_url)
         userEmail = ""
 
         headers = copy.deepcopy(self.headers)
@@ -1209,7 +1211,7 @@ class RTCClient(RTCBase):
         proxies=None
         timeout=60
         kwargs={}
-        url="https://rtcus1.ta.philips.com/ccm/oslc/users/"+user_id
+        url=rtc_url+"/oslc/users/"+user_id
 
         requests.packages.urllib3.disable_warnings()
         requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS += ':HIGH:!DH:!aNULL'
@@ -1228,11 +1230,15 @@ class RTCClient(RTCBase):
             response.raise_for_status()
         
         #retreive user email from xml
-        raw_data = xmltodict.parse(response.content)
-        root_key = list(raw_data.keys())[0]
-        userEmail = raw_data[root_key].get("rtc_cm:emailAddress")
-        #url decode and trim 'mailto:'
-        userEmail = urllib.parse.unquote(userEmail).replace('mailto:', '')
+        try:
+            raw_data = xmltodict.parse(response.content)
+            root_key = list(raw_data.keys())[0]
+            userEmail = raw_data[root_key].get("rtc_cm:emailAddress")
+            #url decode and trim 'mailto:'
+            userEmail = urllib.parse.unquote(userEmail).replace('mailto:', '')
+        except Exception as e:
+            print("error getting user email ", e)
+            userEmail=""
 
         return userEmail
 
@@ -1461,7 +1467,7 @@ class RTCClient(RTCBase):
 
     def _get_paged_resources(self, resource_name, projectarea_id=None,
                              workitem_id=None, customized_attr=None,
-                             page_size="100", archived=False,
+                             page_size="10", archived=False,
                              returned_properties=None, filter_rule=None):
         # TODO: multi-thread
 
@@ -1633,14 +1639,14 @@ class RTCClient(RTCBase):
                 break
 
             # iterate all the entries
-            for entry in entries:
-                resource = self._handle_resource_entry(resource_name,
-                                                       entry,
-                                                       projectarea_url=pa_url,
-                                                       archived=archived,
-                                                       filter_rule=filter_rule)
-                if resource is not None:
-                    resources_list.append(resource)
+            with Pool() as p:
+                resources_list_new = list(
+                    filter(
+                        None,
+                        p.starmap(self._handle_resource_entry,
+                                  [(resource_name, entry, pa_url, archived,
+                                    filter_rule) for entry in entries])))
+                resources_list = resources_list + resources_list_new
 
             # find the next page
             url_next = raw_data.get('oslc_cm:Collection').get('@oslc_cm:next')
